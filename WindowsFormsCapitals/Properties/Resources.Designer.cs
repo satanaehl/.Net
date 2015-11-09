@@ -59,5 +59,23 @@ namespace WindowsFormsCapitals.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to К сожалению, Вы проиграли. Попробуйте ещё раз!.
+        /// </summary>
+        internal static string Form1_Loser {
+            get {
+                return ResourceManager.GetString("Form1_Loser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ура! Вы выйграли!.
+        /// </summary>
+        internal static string Form1_Winner {
+            get {
+                return ResourceManager.GetString("Form1_Winner", resourceCulture);
+            }
+        }
     }
 }

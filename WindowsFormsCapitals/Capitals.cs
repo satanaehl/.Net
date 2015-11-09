@@ -7,68 +7,58 @@ namespace WindowsFormsCapitals
 {
     class Capitals
     {
+        public enum State
+        {
+            NotWinnerNotLoser,
+            Winner,
+            Loser
+        }
+
+        private readonly List<Capital> _countriesWithCapitals = new List<Capital>();
+
         private readonly string[] _fileNames = { @"Resources\Европа.txt",
                                         @"Resources\Африка.txt",
                                         @"Resources\Америка.txt",
                                         @"Resources\Азия.txt",
                                         @"Resources\Австралия и Океания.txt" };
 
+        private readonly Random _rnd1 = new Random();
         int _indexAnswers;
         int _indexTries;
-        private string _info = String.Empty;
         private int _rnd;
-        List<Capital> CuntriesWithCapitals = new List<Capital>();
-        Random rnd1 = new Random();
-
-        public int NumberAnswers
-        {
-            get { return _indexAnswers; }
-            private set { }
-        }
-
-        public int NumberTries
-        {
-            get { return _indexTries; }
-            private set { }
-        }
-
-        public string InfoString
-        {
-            get { return _info; }
-            private set { }
-        }
+        public State StateOfPlayer { get; private set; }
+        public int NumberAnswers => _indexAnswers;
+        public int NumberTries => _indexTries;
 
         private void SetRandom()
         {
-            _rnd = rnd1.Next(0, CuntriesWithCapitals.Count);
+            _rnd = _rnd1.Next(0, _countriesWithCapitals.Count);
         }
 
         public string[] GetOneCountry()
         {
-            string[] results = { CuntriesWithCapitals[_rnd].NameCountry, CuntriesWithCapitals[_rnd].NameCapital };
+            string[] results = { _countriesWithCapitals[_rnd].NameCountry, _countriesWithCapitals[_rnd].NameCapital };
 
             return results;
         }
 
         public void GetCountries()
         {
-
-
             foreach (var item in _fileNames)
             {
                 using (StreamReader reader = new StreamReader(item, Encoding.GetEncoding("windows-1251")))
                 {
-
                     while (reader.Peek() > -1)
                     {
-
                         string readText = reader.ReadLine();
-                        string[] CuntryAndCapital = readText.Split(';');
-                        //CuntryAndCapital = readText.Split(';');
-                        CuntryAndCapital[0] = CuntryAndCapital[0].Trim();
-                        CuntryAndCapital[1] = CuntryAndCapital[1].Trim();
-                        Capital NewOne = new Capital { NameCountry = CuntryAndCapital[0], NameCapital = CuntryAndCapital[1] };
-                        CuntriesWithCapitals.Add(NewOne);
+                        if (readText != null)
+                        {
+                            string[] cuntryAndCapital = readText.Split(';');
+                            cuntryAndCapital[0] = cuntryAndCapital[0].Trim();
+                            cuntryAndCapital[1] = cuntryAndCapital[1].Trim();
+                            Capital newOne = new Capital { NameCountry = cuntryAndCapital[0], NameCapital = cuntryAndCapital[1] };
+                            _countriesWithCapitals.Add(newOne);
+                        }
                     }
                 }
             }
@@ -78,8 +68,7 @@ namespace WindowsFormsCapitals
         {
             _indexAnswers = 7;
             _indexTries = 5;
-            _info = String.Empty;
-
+            StateOfPlayer = State.NotWinnerNotLoser;
             SetRandom();
         }
 
@@ -91,14 +80,14 @@ namespace WindowsFormsCapitals
             }
             if (_indexAnswers == 0)
             {
-                _info = "Ура! Вы победили!!!";
+
+                StateOfPlayer = State.Winner;
             }
             SetRandom();
         }
 
         public bool Try(string tryStr)
         {
-
             if (_indexTries > 0)
             {
                 _indexTries--;
@@ -106,25 +95,21 @@ namespace WindowsFormsCapitals
 
             if (_indexTries == 0)
             {
-                _info = "К сожалению, Вы исчерпали все пять попыток!";
+                StateOfPlayer = State.Loser;
                 return false;
             }
 
             tryStr = tryStr.Trim();
 
+            string rightStr = _countriesWithCapitals[_rnd].NameCapital;
 
-            string rightStr = CuntriesWithCapitals[_rnd].NameCapital;
-
-
-            bool bool01 = String.Equals(rightStr, tryStr, StringComparison.CurrentCultureIgnoreCase);
-            if (bool01)
+            bool successfulTry = String.Equals(rightStr, tryStr, StringComparison.CurrentCultureIgnoreCase);
+            if (successfulTry)
             {
                 NextQuest();
-
                 _indexTries = 5;
             }
-
-            return bool01;
+            return successfulTry;
         }
 
         public class Capital

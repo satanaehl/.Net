@@ -57,6 +57,7 @@
             // 
             // btnGame
             // 
+            this.btnGame.Enabled = false;
             this.btnGame.Location = new System.Drawing.Point(223, 130);
             this.btnGame.Name = "btnGame";
             this.btnGame.Size = new System.Drawing.Size(75, 23);
@@ -78,7 +79,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(137, 26);
+            this.label2.Location = new System.Drawing.Point(184, 17);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(55, 13);
             this.label2.TabIndex = 4;
@@ -98,9 +99,10 @@
             this.lblAnswer.AutoSize = true;
             this.lblAnswer.Location = new System.Drawing.Point(12, 48);
             this.lblAnswer.Name = "lblAnswer";
-            this.lblAnswer.Size = new System.Drawing.Size(401, 13);
+            this.lblAnswer.Size = new System.Drawing.Size(403, 26);
             this.lblAnswer.TabIndex = 6;
-            this.lblAnswer.Text = "Здесь будет отображаться вопросов, которые осталось отгадать до победы.";
+            this.lblAnswer.Text = "Здесь будет отображаться вопросов, которые осталось отгадать до победы.\r\nНажмите " +
+    "Start, чтобы начать игру. Чтобы подтвердить ответ нажмите Answer.";
             // 
             // Form1
             // 
@@ -115,7 +117,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.textBox1);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "Отгадай столицу!";
             this.ResumeLayout(false);
             this.PerformLayout();
 
