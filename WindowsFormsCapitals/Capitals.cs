@@ -2,47 +2,25 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
+using Troschuetz.Random;
+using Troschuetz.Random.Generators;
 
 namespace WindowsFormsCapitals
 {
+    /// <summary>
+    /// Describes a state of the player.
+    /// </summary>
+    public enum State
+    {
+        None,
+        Winner,
+        Loser
+    }
+
     class Capitals
     {
-        public enum State
-        {
-            NotWinnerNotLoser,
-            Winner,
-            Loser
-        }
-
-        private readonly List<Capital> _countriesWithCapitals = new List<Capital>();
-
-        private readonly string[] _fileNames = { @"Resources\Европа.txt",
-                                        @"Resources\Африка.txt",
-                                        @"Resources\Америка.txt",
-                                        @"Resources\Азия.txt",
-                                        @"Resources\Австралия и Океания.txt" };
-
-        private readonly Random _rnd1 = new Random();
-        int _indexAnswers;
-        int _indexTries;
-        private int _rnd;
-        public State StateOfPlayer { get; private set; }
-        public int NumberAnswers => _indexAnswers;
-        public int NumberTries => _indexTries;
-
-        private void SetRandom()
-        {
-            _rnd = _rnd1.Next(0, _countriesWithCapitals.Count);
-        }
-
-        public string[] GetOneCountry()
-        {
-            string[] results = { _countriesWithCapitals[_rnd].NameCountry, _countriesWithCapitals[_rnd].NameCapital };
-
-            return results;
-        }
-
-        public void GetCountries()
+        public Capitals()
         {
             foreach (var item in _fileNames)
             {
@@ -50,13 +28,17 @@ namespace WindowsFormsCapitals
                 {
                     while (reader.Peek() > -1)
                     {
-                        string readText = reader.ReadLine();
+                        Task<string> readText = reader.ReadLineAsync();
                         if (readText != null)
                         {
-                            string[] cuntryAndCapital = readText.Split(';');
+                            string[] cuntryAndCapital = readText.Result.Split(';');
                             cuntryAndCapital[0] = cuntryAndCapital[0].Trim();
                             cuntryAndCapital[1] = cuntryAndCapital[1].Trim();
-                            Capital newOne = new Capital { NameCountry = cuntryAndCapital[0], NameCapital = cuntryAndCapital[1] };
+                            Capital newOne = new Capital
+                            {
+                                NameCountry = cuntryAndCapital[0],
+                                NameCapital = cuntryAndCapital[1]
+                            };
                             _countriesWithCapitals.Add(newOne);
                         }
                     }
@@ -64,23 +46,52 @@ namespace WindowsFormsCapitals
             }
         }
 
-        public void StartGame()
+        private readonly List<Capital> _countriesWithCapitals = new List<Capital>();
+
+        private readonly string[] _fileNames =
         {
-            _indexAnswers = 7;
-            _indexTries = 5;
-            StateOfPlayer = State.NotWinnerNotLoser;
+            @"Resources\Европа.txt",
+            @"Resources\Африка.txt",
+            @"Resources\Америка.txt",
+            @"Resources\Азия.txt",
+            @"Resources\Австралия и Океания.txt"
+        };
+
+        private readonly TRandom _rnd1 = new TRandom(new ALFGenerator());
+
+        private int _rnd;
+        public State StateOfPlayer { get; private set; } //= State.None;
+        public int NumberAnswers { get; private set; }
+
+        public int NumberTries { get; private set; }
+
+        private void SetRandom() => _rnd = _rnd1.Next(_countriesWithCapitals.Count);
+
+        public string[] OneCountry
+        {
+            get
+            {
+                string[] results = { _countriesWithCapitals[_rnd].NameCountry, _countriesWithCapitals[_rnd].NameCapital };
+                return results;
+            }
+        }
+
+        public void StartNewGame()
+        {
+            NumberAnswers = 7;
+            NumberTries = 5;
+            StateOfPlayer = State.None;
             SetRandom();
         }
 
-        public void NextQuest()
+        public void NextQuestion()
         {
-            if (_indexAnswers > 0)
+            if (NumberAnswers > 0)
             {
-                _indexAnswers--;
+                NumberAnswers--;
             }
-            if (_indexAnswers == 0)
+            if (NumberAnswers == 0)
             {
-
                 StateOfPlayer = State.Winner;
             }
             SetRandom();
@@ -88,12 +99,12 @@ namespace WindowsFormsCapitals
 
         public bool Try(string tryStr)
         {
-            if (_indexTries > 0)
+            if (NumberTries > 0)
             {
-                _indexTries--;
+                NumberTries--;
             }
 
-            if (_indexTries == 0)
+            if (NumberTries == 0)
             {
                 StateOfPlayer = State.Loser;
                 return false;
@@ -106,19 +117,16 @@ namespace WindowsFormsCapitals
             bool successfulTry = String.Equals(rightStr, tryStr, StringComparison.CurrentCultureIgnoreCase);
             if (successfulTry)
             {
-                NextQuest();
-                _indexTries = 5;
+                NextQuestion();
+                NumberTries = 5;
             }
             return successfulTry;
         }
 
-        public class Capital
+        private class Capital
         {
             public string NameCountry { get; set; }
             public string NameCapital { get; set; }
         }
     }
 }
-
-
-

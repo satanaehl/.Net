@@ -16,14 +16,19 @@ namespace WindowsFormsCapitals
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            One.GetCountries();
-            One.StartGame();
+            One.StartNewGame();
             btnGame.Enabled = true;
             UpdateQuestion();
             btnGame.Enabled = true;
+
         }
 
         private void btnGame_Click(object sender, EventArgs e)
+        {
+            Answer();
+        }
+
+        private void Answer()
         {
             One.Try(textBox1.Text);
             UpdateQuestion();
@@ -31,25 +36,25 @@ namespace WindowsFormsCapitals
 
         private void UpdateQuestion()
         {
-            label1.Text = "Загадана страна " + One.GetOneCountry()[0] + ". Как называется её столица?";
+            label1.Text = string.Format(Resources.Form1_Question, One.OneCountry[0]);
             textBox1.Text = String.Empty;
-            lblAnswer.Text = "До победы осталось угадать " + One.NumberAnswers + " столиц";
-            lblTry.Text = "У Вас осталось " + One.NumberTries + " попыток";
+            lblAnswer.Text = string.Format(Resources.Form1_NumberRightAnswersToWin, One.NumberAnswers);
+            lblTry.Text = string.Format(Resources.Form1_NumberOfTries, One.NumberTries);
 
             switch (One.StateOfPlayer)
             {
-                case Capitals.State.Loser:
+                case State.Loser:
                     label2.Text = Resources.Form1_Loser;
                     btnGame.Enabled = false;
                     break;
-                case Capitals.State.Winner:
+                case State.Winner:
                     label2.Text = Resources.Form1_Winner;
                     btnGame.Enabled = false;
                     lblAnswer.Text = String.Empty;
                     lblTry.Text = String.Empty;
                     label1.Text = String.Empty;
                     break;
-                case Capitals.State.NotWinnerNotLoser:
+                case State.None:
                     label2.Text = String.Empty;
                     break;
             }

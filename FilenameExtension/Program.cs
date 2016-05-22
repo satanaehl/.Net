@@ -7,6 +7,11 @@ namespace FilenameExtension
 {
     class Program
     {
+
+        /// <summary>
+        /// Add an extension to files .png, .gif, .jpg ib the directory /My Documents/guess-extension without any extensions in names of files. 
+        /// </summary>
+        /// <param name="args"></param>
         static void Main(string[] args)
         {
             byte[] pngBytes =

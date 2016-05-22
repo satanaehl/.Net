@@ -61,7 +61,7 @@ namespace WindowsFormsCapitals.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to К сожалению, Вы проиграли. Попробуйте ещё раз!.
+        ///   Looks up a localized string similar to Try again! :).
         /// </summary>
         internal static string Form1_Loser {
             get {
@@ -70,7 +70,34 @@ namespace WindowsFormsCapitals.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ура! Вы выйграли!.
+        ///   Looks up a localized string similar to {0} tries are left..
+        /// </summary>
+        internal static string Form1_NumberOfTries {
+            get {
+                return ResourceManager.GetString("Form1_NumberOfTries", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  {0} more capitals are left to win..
+        /// </summary>
+        internal static string Form1_NumberRightAnswersToWin {
+            get {
+                return ResourceManager.GetString("Form1_NumberRightAnswersToWin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The country is {0}. What name is its capital?.
+        /// </summary>
+        internal static string Form1_Question {
+            get {
+                return ResourceManager.GetString("Form1_Question", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are a winner!.
         /// </summary>
         internal static string Form1_Winner {
             get {

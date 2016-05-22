@@ -3,16 +3,31 @@ using System.Globalization;
 
 namespace ComplexNumbers
 {
+
+    /// <summary>
+    /// Represents a complex number.
+    /// </summary>
     class ComplexNumber : IEquatable<ComplexNumber>, IFormattable
     {
-        public ComplexNumber(double real, double imaginary)
+        /// <summary>
+        /// Initializes a new instance of the ComplexNumber class using the specified real and imaginary values.
+        /// </summary>
+        /// <param name="real">A real value.</param>
+        /// <param name="imaginary">A imaginary value.</param>
+        public ComplexNumber(double real, double imaginary = 0)
         {
             Real = real;
             Imaginary = imaginary;
         }
 
-        public ComplexNumber(double real) : this(real, 0) { }
+        //public ComplexNumber(double real) : this(real, 0) { }
+        /// <summary>
+        /// Gets the imaginary component of the current ComplexNumber object.
+        /// </summary>
         public double Real { get; set; }
+        /// <summary>
+        /// Gets the real component of the current Complex object.
+        /// </summary>
         public double Imaginary { get; set; }
 
         public bool Equals(ComplexNumber other)
@@ -25,6 +40,12 @@ namespace ComplexNumbers
             return false;
         }
 
+        /// <summary>
+        /// Converts the value of the current complex number to its equivalent string representation in Cartesian form by using the specified format for its real and imaginary parts.
+        /// </summary>
+        /// <param name="format">"P" for a view as a point or position vector in a two-dimensional Cartesian coordinate system. "A" and "G" for Cartesian format.</param>
+        /// <param name="formatProvider"></param>
+        /// <returns></returns>
         public string ToString(string format, IFormatProvider formatProvider)
         {
             if (String.IsNullOrEmpty(format)) format = "G";
@@ -53,43 +74,43 @@ namespace ComplexNumbers
             }
         }
 
-        static public ComplexNumber operator +(ComplexNumber x, ComplexNumber y)
+        public static ComplexNumber operator +(ComplexNumber x, ComplexNumber y)
         {
             ComplexNumber z = new ComplexNumber(x.Real + y.Real, x.Imaginary + y.Imaginary);
             return z;
         }
 
-        static public ComplexNumber operator +(double x, ComplexNumber y)
+        public static ComplexNumber operator +(double x, ComplexNumber y)
         {
             ComplexNumber z = new ComplexNumber(x + y.Real, y.Imaginary);
             return z;
         }
 
-        static public ComplexNumber operator +(ComplexNumber x, double y)
+        public static ComplexNumber operator +(ComplexNumber x, double y)
         {
             ComplexNumber z = new ComplexNumber(x.Real + y, x.Imaginary);
             return z;
         }
 
-        static public ComplexNumber operator -(ComplexNumber x, ComplexNumber y)
+        public static ComplexNumber operator -(ComplexNumber x, ComplexNumber y)
         {
             ComplexNumber z = new ComplexNumber(x.Real - y.Real, x.Imaginary - y.Imaginary);
             return z;
         }
 
-        static public ComplexNumber operator -(double x, ComplexNumber y)
+        public static ComplexNumber operator -(double x, ComplexNumber y)
         {
             ComplexNumber z = new ComplexNumber(x - y.Real, -y.Imaginary);
             return z;
         }
 
-        static public ComplexNumber operator -(ComplexNumber x, double y)
+        public static ComplexNumber operator -(ComplexNumber x, double y)
         {
             ComplexNumber z = new ComplexNumber(x.Real - y, x.Imaginary);
             return z;
         }
 
-        static public bool operator ==(ComplexNumber x, ComplexNumber y)
+        public static bool operator ==(ComplexNumber x, ComplexNumber y)
         {
             if (((object)x == null) && ((object)y == null))
             {
@@ -117,11 +138,17 @@ namespace ComplexNumbers
         //    return a.Real;
         //}
 
+
         public override string ToString()
         {
             return ToString("G", CultureInfo.CurrentCulture);
         }
 
+        /// <summary>
+        /// Returns a value that indicates whether the current instance and a specified object have the same value.
+        /// </summary>
+        /// <param name="obj">The object to compare.</param>
+        /// <returns></returns>
         public override bool Equals(object obj)
         {
             ComplexNumber number = obj as ComplexNumber;
