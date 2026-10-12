@@ -30,6 +30,36 @@ namespace ComplexNumbers
         public double Imaginary { get; set; }
 
         /// <summary>
+        /// Gets the magnitude, scaling finite components to avoid intermediate overflow or underflow.
+        /// </summary>
+        public double Magnitude
+        {
+            get
+            {
+                double real = Math.Abs(Real);
+                double imaginary = Math.Abs(Imaginary);
+
+                if (double.IsInfinity(real) || double.IsInfinity(imaginary))
+                    return double.PositiveInfinity;
+
+                double largest = Math.Max(real, imaginary);
+                if (largest == 0)
+                    return 0;
+
+                double ratio = Math.Min(real, imaginary) / largest;
+                return largest * Math.Sqrt(1 + ratio * ratio);
+            }
+        }
+
+        /// <summary>
+        /// Returns a new number with the imaginary component negated.
+        /// </summary>
+        public ComplexNumber Conjugate()
+        {
+            return new ComplexNumber(Real, -Imaginary);
+        }
+
+        /// <summary>
         /// Compares both components exactly using Double.Equals, including NaN and infinities.
         /// </summary>
         public bool Equals(ComplexNumber other)
@@ -107,6 +137,26 @@ namespace ComplexNumbers
         {
             return ReferenceEquals(x, y)
                 || (!ReferenceEquals(x, null) && x.Equals(y));
+        }
+
+        public static ComplexNumber operator *(ComplexNumber x, ComplexNumber y)
+        {
+            ArgumentNullException.ThrowIfNull(x);
+            ArgumentNullException.ThrowIfNull(y);
+            return new ComplexNumber(
+                x.Real * y.Real - x.Imaginary * y.Imaginary,
+                x.Real * y.Imaginary + x.Imaginary * y.Real);
+        }
+
+        public static ComplexNumber operator *(ComplexNumber x, double y)
+        {
+            ArgumentNullException.ThrowIfNull(x);
+            return new ComplexNumber(x.Real * y, x.Imaginary * y);
+        }
+
+        public static ComplexNumber operator *(double x, ComplexNumber y)
+        {
+            return y * x;
         }
 
         public static bool operator !=(ComplexNumber x, ComplexNumber y)
