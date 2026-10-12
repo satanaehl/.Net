@@ -2,42 +2,42 @@
 
 Учебное консольное приложение с собственной реализацией комплексного
 числа. Поддерживает сложение, вычитание, сравнение и форматирование.
-Целевая платформа приложения и тестов — **.NET Framework 4.5.2**.
+Целевая платформа приложения и тестов — **.NET 10** (`net10.0`).
 
 ## Сборка и запуск
 
 Команды выполняются в PowerShell из корня репозитория.
-Для сборки нужен .NET SDK; для запуска — Windows с .NET Framework
-4.5.2 или совместимой более новой версией Framework.
-Установленный современный .NET SDK используется только как инструмент
-сборки и не меняет целевую платформу приложения.
+Для сборки и приведённых ниже команд нужен .NET 10 SDK.
+Приложение использует современный .NET вместо .NET Framework.
 
 ```powershell
 dotnet restore ComplexNumbers.Tests/ComplexNumbers.Tests.csproj --packages .packages
-dotnet build ComplexNumbers.Tests/ComplexNumbers.Tests.csproj --no-restore
-& .\ComplexNumbers\bin\Debug\ComplexNumbers.exe
+dotnet build ComplexNumbers.Tests/ComplexNumbers.Tests.csproj --no-restore --configuration Release
+dotnet run --project ComplexNumbers/ComplexNumbers.csproj --no-build --configuration Release
 ```
 
-NuGet загружает эталонные сборки .NET Framework 4.5.2 для компиляции,
-поэтому отдельно устанавливать targeting pack не требуется. При первом
-восстановлении пакетов нужен доступ к NuGet.org. Эти сборки не заменяют
-среду выполнения .NET Framework.
+При первом восстановлении тестовых пакетов нужен доступ к NuGet.org.
+Эталонные сборки и targeting pack .NET Framework больше не используются.
 
 ## Тесты
 
-Используются [NUnit 3.14.0](https://www.nuget.org/packages/NUnit/3.14.0)
-и [NUnitLite 3.14.0](https://www.nuget.org/packages/NUnitLite/3.14.0),
-совместимые с текущей платформой. Тестовый проект ссылается на приложение;
+Используется [xUnit.net v3](https://www.nuget.org/packages/xunit.v3/4.0.2)
+со встроенной поддержкой Microsoft.Testing.Platform для `dotnet test`.
+Тестовый проект ссылается на приложение;
 доступ к внутреннему классу предоставлен через `InternalsVisibleTo`.
 
 После сборки запустить тесты:
 
 ```powershell
-& .\ComplexNumbers.Tests\bin\Debug\net452\ComplexNumbers.Tests.exe --noresult
+dotnet test --project ComplexNumbers.Tests/ComplexNumbers.Tests.csproj --no-build --configuration Release
 ```
 
-NUnitLite запускает тесты непосредственно из EXE и возвращает ненулевой
-код при сбое. Команда `dotnet test` для этого проекта не настроена.
+Одиночные сценарии используют `[Fact]`, наборы входных данных —
+`[Theory]` и `[InlineData]`. Команда `dotnet test` возвращает ненулевой
+код при сбое.
+
+В корневом `global.json` выбраны SDK .NET 10 и Microsoft.Testing.Platform.
+SDK допускает более новые исправления и feature bands в пределах .NET 10.
 
 Проверяются арифметика и сохранность операндов, равенство и `null`,
 хеширование и поиск в `HashSet`, специальные значения `double`,
@@ -46,13 +46,12 @@ NUnitLite запускает тесты непосредственно из EXE 
 ## Автоматическая проверка
 
 Workflow `.github/workflows/complex-numbers.yml` выполняет восстановление
-пакетов, сборку в Release и все тесты NUnitLite на Windows при push и
+пакетов, сборку в Release и все тесты xUnit.net на Windows при push и
 pull request с изменениями этого проекта, тестов или конфигурации сборки.
 Также его можно запустить вручную на вкладке Actions в GitHub.
 Ненулевой код возврата тестов завершает проверку с ошибкой.
 
-SDK .NET 10 используется для сборки. Целевая платформа приложения и тестов
-остаётся .NET Framework 4.5.2; её повышение запланировано отдельным этапом.
+Приложение и тесты собираются и запускаются на .NET 10.
 
 ## Правила сравнения и вывода
 
@@ -79,3 +78,12 @@ SDK .NET 10 используется для сборки. Целевая пла�
 `Double.Epsilon` заменено на `double.Equals`, добавлен `GetHashCode`.
 Убраны закомментированные заготовки и лишние переменные, исправлены
 описания действительной и мнимой частей.
+
+## Переход на .NET 10
+
+Основной проект переведён в SDK-style формат, оба проекта используют
+`net10.0`. Удалены пакет эталонных сборок .NET Framework и старый
+`App.config`, содержавший только настройку запуска Framework 4.5.2.
+Правила арифметики, равенства и форматирования сохранены; существующие
+тесты проверяют их на новой платформе. Тестовый проект переведён с
+NUnit/NUnitLite на xUnit.net с сохранением всех проверяемых сценариев.

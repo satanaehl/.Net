@@ -2,20 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
-using NUnit.Framework;
+using Xunit;
 
 namespace ComplexNumbers.Tests
 {
-    [TestFixture]
     public class ComplexNumberTests
     {
-        [Test]
+        [Fact]
         public void Constructor_DefaultsImaginaryComponentToZero()
         {
             AssertComponents(new ComplexNumber(10.5), 10.5, 0);
         }
 
-        [Test]
+        [Fact]
         public void Arithmetic_AddsAndSubtractsWithoutChangingOperands()
         {
             var left = new ComplexNumber(2, 3);
@@ -31,92 +30,91 @@ namespace ComplexNumbers.Tests
             AssertComponents(right, 4, -1);
         }
 
-        [Test, Category("Equality")]
+        [Fact, Trait("Category", "Equality")]
         public void Equality_AllEntryPointsAgreeForEqualValues()
         {
             var left = new ComplexNumber(2, 3);
             var right = new ComplexNumber(2, 3);
-            Assert.That(left.Equals(right), Is.True);
-            Assert.That(left.Equals((object)right), Is.True);
-            Assert.That(left == right, Is.True);
-            Assert.That(left != right, Is.False);
+            Assert.True(left.Equals(right));
+            Assert.True(left.Equals((object)right));
+            Assert.True(left == right);
+            Assert.False(left != right);
             var sameReference = left;
-            Assert.That(left == sameReference, Is.True);
+            Assert.True(left == sameReference);
         }
 
-        [Test, Category("Equality")]
+        [Fact, Trait("Category", "Equality")]
         public void Equality_DistinguishesBothComponentsAndUsesExactValues()
         {
             var value = new ComplexNumber(2, 3);
-            Assert.That(value == new ComplexNumber(2, 4), Is.False);
-            Assert.That(value == new ComplexNumber(4, 3), Is.False);
-            Assert.That(new ComplexNumber(0) == new ComplexNumber(double.Epsilon), Is.False);
-            Assert.That(new ComplexNumber(0.1 + 0.2) == new ComplexNumber(0.3), Is.False);
-            Assert.That(value.Equals("2+i3"), Is.False);
+            Assert.False(value == new ComplexNumber(2, 4));
+            Assert.False(value == new ComplexNumber(4, 3));
+            Assert.False(new ComplexNumber(0) == new ComplexNumber(double.Epsilon));
+            Assert.False(new ComplexNumber(0.1 + 0.2) == new ComplexNumber(0.3));
+            Assert.False(value.Equals("2+i3"));
         }
 
-        [Test, Category("Equality")]
+        [Fact, Trait("Category", "Equality")]
         public void Equality_HandlesNullInBothPositions()
         {
             ComplexNumber missing = null;
             var value = new ComplexNumber(2, 3);
-            Assert.That(missing == null, Is.True);
-            Assert.That(value == missing, Is.False);
-            Assert.That(missing == value, Is.False);
-            Assert.That(value != missing, Is.True);
-            Assert.That(missing != value, Is.True);
-            Assert.That(value.Equals(missing), Is.False);
-            Assert.That(value.Equals((object)null), Is.False);
+            Assert.True(missing == null);
+            Assert.False(value == missing);
+            Assert.False(missing == value);
+            Assert.True(value != missing);
+            Assert.True(missing != value);
+            Assert.False(value.Equals(missing));
+            Assert.False(value.Equals((object)null));
         }
 
-        [TestCase(double.PositiveInfinity, 3)]
-        [TestCase(double.NegativeInfinity, 3)]
-        [TestCase(double.NaN, 3)]
-        [TestCase(3, double.NaN)]
-        [TestCase(3, double.PositiveInfinity)]
+        [Theory]
+        [InlineData(double.PositiveInfinity, 3)]
+        [InlineData(double.NegativeInfinity, 3)]
+        [InlineData(double.NaN, 3)]
+        [InlineData(3, double.NaN)]
+        [InlineData(3, double.PositiveInfinity)]
         public void ObjectEquality_HandlesSpecialDoubleValues(double real, double imaginary)
         {
             var value = new ComplexNumber(real, imaginary);
-            Assert.That(value.Equals((object)new ComplexNumber(real, imaginary)), Is.True);
+            Assert.True(value.Equals((object)new ComplexNumber(real, imaginary)));
         }
 
-        [Test]
+        [Fact]
         public void EqualValues_HaveEqualHashCodes()
         {
-            Assert.That(new ComplexNumber(2, 3).GetHashCode(),
-                Is.EqualTo(new ComplexNumber(2, 3).GetHashCode()));
-            Assert.That(new ComplexNumber(0.0, -0.0).GetHashCode(),
-                Is.EqualTo(new ComplexNumber(-0.0, 0.0).GetHashCode()));
+            Assert.Equal(new ComplexNumber(2, 3).GetHashCode(), new ComplexNumber(2, 3).GetHashCode());
+            Assert.Equal(new ComplexNumber(0.0, -0.0).GetHashCode(), new ComplexNumber(-0.0, 0.0).GetHashCode());
         }
 
-        [Test, Category("Equality")]
+        [Fact, Trait("Category", "Equality")]
         public void HashSet_FindsAnEqualValue()
         {
             var values = new HashSet<ComplexNumber> { new ComplexNumber(2, 3) };
-            Assert.That(values.Contains(new ComplexNumber(2, 3)), Is.True);
+            Assert.Contains(new ComplexNumber(2, 3), values);
         }
 
-        [TestCase(null, 3, "2+i3")]
-        [TestCase("", 3, "2+i3")]
-        [TestCase("G", 3, "2+i3")]
-        [TestCase("a", -3, "2-i3")]
-        [TestCase("G", 0, "2")]
-        [TestCase("p", -3, "(2,-3)")]
+        [Theory]
+        [InlineData(null, 3, "2+i3")]
+        [InlineData("", 3, "2+i3")]
+        [InlineData("G", 3, "2+i3")]
+        [InlineData("a", -3, "2-i3")]
+        [InlineData("G", 0, "2")]
+        [InlineData("p", -3, "(2,-3)")]
         public void Formatting_SupportsDocumentedFormats(string format, double imaginary, string expected)
         {
-            Assert.That(new ComplexNumber(2, imaginary).ToString(format, CultureInfo.InvariantCulture),
-                Is.EqualTo(expected));
+            Assert.Equal(expected, new ComplexNumber(2, imaginary).ToString(format, CultureInfo.InvariantCulture));
         }
 
-        [Test]
+        [Fact]
         public void Formatting_UsesSpecifiedCulture()
         {
             var value = new ComplexNumber(2.5, -3.5);
-            Assert.That(value.ToString("A", CultureInfo.GetCultureInfo("ru-RU")), Is.EqualTo("2,5-i3,5"));
-            Assert.That(value.ToString("A", CultureInfo.InvariantCulture), Is.EqualTo("2.5-i3.5"));
+            Assert.Equal("2,5-i3,5", value.ToString("A", CultureInfo.GetCultureInfo("ru-RU")));
+            Assert.Equal("2.5-i3.5", value.ToString("A", CultureInfo.InvariantCulture));
         }
 
-        [Test]
+        [Fact]
         public void Formatting_DefaultsToCurrentCulture()
         {
             var previous = CultureInfo.CurrentCulture;
@@ -124,8 +122,8 @@ namespace ComplexNumbers.Tests
             {
                 Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
                 var value = new ComplexNumber(2.5, 3.5);
-                Assert.That(value.ToString(), Is.EqualTo("2,5+i3,5"));
-                Assert.That(value.ToString("G", null), Is.EqualTo("2,5+i3,5"));
+                Assert.Equal("2,5+i3,5", value.ToString());
+                Assert.Equal("2,5+i3,5", value.ToString("G", null));
             }
             finally
             {
@@ -133,7 +131,7 @@ namespace ComplexNumbers.Tests
             }
         }
 
-        [Test]
+        [Fact]
         public void Formatting_RejectsUnknownFormat()
         {
             Assert.Throws<FormatException>(() => new ComplexNumber(2).ToString("X", CultureInfo.InvariantCulture));
@@ -141,8 +139,8 @@ namespace ComplexNumbers.Tests
 
         private static void AssertComponents(ComplexNumber value, double real, double imaginary)
         {
-            Assert.That(value.Real, Is.EqualTo(real));
-            Assert.That(value.Imaginary, Is.EqualTo(imaginary));
+            Assert.Equal(real, value.Real);
+            Assert.Equal(imaginary, value.Imaginary);
         }
     }
 }

@@ -33,19 +33,19 @@
 
 ## ComplexNumbers
 
-- Сохранять .NET Framework 4.5.2; повышение версии не входит в текущую задачу.
-- Для тестов используются NUnit 3.14.0 и NUnitLite 3.14.0.
+- Приложение и тесты используют .NET 10 (`net10.0`) и SDK-style проекты.
+- Остальные учебные проекты обновлять отдельно; их целевые версии пока сохранять.
+- Для тестов используется xUnit.net v3; запускать через `dotnet test`.
 - Равенство компонентов определяется через `double.Equals`, без допуска.
 - Команды ниже выполняются в PowerShell из корня репозитория:
 
 ```powershell
 dotnet restore ComplexNumbers.Tests/ComplexNumbers.Tests.csproj --packages .packages
-dotnet build ComplexNumbers.Tests/ComplexNumbers.Tests.csproj --no-restore
-& .\ComplexNumbers.Tests\bin\Debug\net452\ComplexNumbers.Tests.exe --noresult
-& .\ComplexNumbers\bin\Debug\ComplexNumbers.exe
+dotnet build ComplexNumbers.Tests/ComplexNumbers.Tests.csproj --no-restore --configuration Release
+dotnet test --project ComplexNumbers.Tests/ComplexNumbers.Tests.csproj --no-build --configuration Release
+dotnet run --project ComplexNumbers/ComplexNumbers.csproj --no-build --configuration Release
 ```
 
-- `dotnet test` для этого проекта не настроен; проверять код возврата NUnitLite.
 - GitHub Actions: `.github/workflows/complex-numbers.yml` собирает и проверяет
   этот проект в Release на Windows. При изменении команд запуска обновлять workflow.
-- Повышение целевой версии .NET планируется позже как отдельная задача.
+- `global.json` выбирает SDK .NET 10 и Microsoft.Testing.Platform для `dotnet test`.
