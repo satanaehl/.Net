@@ -70,6 +70,48 @@ namespace ComplexNumbers
         }
 
         /// <summary>
+        /// Compares each component with an absolute or relative tolerance.
+        /// NaN is never approximately equal; matching infinities are equal.
+        /// </summary>
+        /// <param name="other">The number to compare; null returns false.</param>
+        /// <param name="absoluteTolerance">A finite, nonnegative tolerance near zero.</param>
+        /// <param name="relativeTolerance">A finite, nonnegative tolerance relative to each component's scale.</param>
+        public bool ApproximatelyEquals(ComplexNumber other,
+            double absoluteTolerance = 1e-12, double relativeTolerance = 1e-12)
+        {
+            if (!double.IsFinite(absoluteTolerance) || absoluteTolerance < 0)
+                throw new ArgumentOutOfRangeException(nameof(absoluteTolerance));
+            if (!double.IsFinite(relativeTolerance) || relativeTolerance < 0)
+                throw new ArgumentOutOfRangeException(nameof(relativeTolerance));
+
+            return !ReferenceEquals(other, null)
+                && ApproximatelyEqualComponent(Real, other.Real, absoluteTolerance, relativeTolerance)
+                && ApproximatelyEqualComponent(Imaginary, other.Imaginary, absoluteTolerance, relativeTolerance);
+        }
+
+        private static bool ApproximatelyEqualComponent(double left, double right,
+            double absoluteTolerance, double relativeTolerance)
+        {
+            if (double.IsNaN(left) || double.IsNaN(right))
+                return false;
+            if (left == right)
+                return true;
+            if (!double.IsFinite(left) || !double.IsFinite(right))
+                return false;
+
+            double difference = Math.Abs(left - right);
+            if (difference <= absoluteTolerance)
+                return true;
+
+            double scale = Math.Max(Math.Abs(left), Math.Abs(right));
+            // Normalize before subtracting only when the original difference overflows.
+            double relativeDifference = double.IsInfinity(difference)
+                ? Math.Abs(left / scale - right / scale)
+                : difference / scale;
+            return relativeDifference <= relativeTolerance;
+        }
+
+        /// <summary>
         /// Converts the value of the current complex number to its equivalent string representation in Cartesian form by using the specified format for its real and imaginary parts.
         /// </summary>
         /// <param name="format">"P" for a view as a point or position vector in a two-dimensional Cartesian coordinate system. "A" and "G" for Cartesian format.</param>
