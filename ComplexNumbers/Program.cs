@@ -32,6 +32,14 @@ namespace ComplexNumbers
 
             x = y = null;
             if (x == y) Console.WriteLine("x == y == null");
+
+            Console.WriteLine();
+            var dividend = new ComplexNumber(11, 10);
+            var divisor = new ComplexNumber(4, -1);
+            Console.WriteLine("({0}) / ({1}) = {2}", dividend, divisor, dividend / divisor);
+            Console.WriteLine("({0}) / 2 = {1}", dividend, dividend / 2);
+            Console.WriteLine("10 / ({0}) = {1}", divisor, 10 / divisor);
+            Console.WriteLine("({0}) / 0 = {1:P}", dividend, dividend / 0);
         }
     }
 }

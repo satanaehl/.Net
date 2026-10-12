@@ -164,6 +164,101 @@ namespace ComplexNumbers
             return !(x == y);
         }
 
+        /// <summary>
+        /// Divides using Smith's formula with scaling for large finite operands.
+        /// A zero divisor returns NaN for both components.
+        /// </summary>
+        public static ComplexNumber operator /(ComplexNumber x, ComplexNumber y)
+        {
+            ArgumentNullException.ThrowIfNull(x);
+            ArgumentNullException.ThrowIfNull(y);
+
+            double a = x.Real;
+            double b = x.Imaginary;
+            double c = y.Real;
+            double d = y.Imaginary;
+
+            if (c == 0 && d == 0)
+                return new ComplexNumber(double.NaN, double.NaN);
+
+            bool finite = double.IsFinite(a) && double.IsFinite(b)
+                && double.IsFinite(c) && double.IsFinite(d);
+
+            if (finite)
+            {
+                // Pure real/imaginary divisors need no intermediate products.
+                if (d == 0)
+                    return new ComplexNumber(a / c, b / c);
+                if (c == 0)
+                    return new ComplexNumber(b / d, -a / d);
+
+                // The denominator below can be up to twice its largest component.
+                if (Math.Max(Math.Abs(c), Math.Abs(d)) > double.MaxValue / 2)
+                {
+                    a /= 2;
+                    b /= 2;
+                    c /= 2;
+                    d /= 2;
+                }
+
+                // Bring subnormal divisors into the normal range when scaling is safe.
+                const double minNormal = 2.2250738585072014e-308;
+                if (Math.Max(Math.Abs(c), Math.Abs(d)) < 4 * minNormal
+                    && Math.Max(Math.Abs(a), Math.Abs(b)) <= Math.ScaleB(double.MaxValue, -54))
+                {
+                    a = Math.ScaleB(a, 54);
+                    b = Math.ScaleB(b, 54);
+                    c = Math.ScaleB(c, 54);
+                    d = Math.ScaleB(d, 54);
+                }
+            }
+
+            if (Math.Abs(c) > Math.Abs(d))
+            {
+                double ratio = d / c;
+                double denominator = c + d * ratio;
+                return new ComplexNumber(
+                    DivideSum(a, b, ratio, denominator, finite),
+                    DivideSum(b, -a, ratio, denominator, finite));
+            }
+            else
+            {
+                double ratio = c / d;
+                double denominator = d + c * ratio;
+                return new ComplexNumber(
+                    DivideSum(b, a, ratio, denominator, finite),
+                    DivideSum(-a, b, ratio, denominator, finite));
+            }
+        }
+
+        public static ComplexNumber operator /(ComplexNumber x, double y)
+        {
+            return x / new ComplexNumber(y);
+        }
+
+        public static ComplexNumber operator /(double x, ComplexNumber y)
+        {
+            return new ComplexNumber(x) / y;
+        }
+
+        private static double DivideSum(double first, double second, double ratio, double denominator, bool finite)
+        {
+            const double minNormal = 2.2250738585072014e-308;
+            if (finite && Math.Max(Math.Abs(first), Math.Abs(second)) < 4 * minNormal)
+            {
+                first = Math.ScaleB(first, 54);
+                second = Math.ScaleB(second, 54);
+                denominator = Math.ScaleB(denominator, 54);
+            }
+            double sum = first + second * ratio;
+            if (finite && double.IsInfinity(sum))
+            {
+                // Halve only the overflowing sum, preserving the other component.
+                return ((first / 2 + (second / 2) * ratio) / denominator) * 2;
+            }
+            return sum / denominator;
+        }
+
         public override string ToString()
         {
             return ToString("G", CultureInfo.CurrentCulture);
