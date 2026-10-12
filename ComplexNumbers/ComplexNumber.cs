@@ -7,37 +7,36 @@ namespace ComplexNumbers
     /// <summary>
     /// Represents a complex number.
     /// </summary>
-    class ComplexNumber : IEquatable<ComplexNumber>, IFormattable
+    internal class ComplexNumber : IEquatable<ComplexNumber>, IFormattable
     {
         /// <summary>
         /// Initializes a new instance of the ComplexNumber class using the specified real and imaginary values.
         /// </summary>
         /// <param name="real">A real value.</param>
-        /// <param name="imaginary">A imaginary value.</param>
+        /// <param name="imaginary">An imaginary value.</param>
         public ComplexNumber(double real, double imaginary = 0)
         {
             Real = real;
             Imaginary = imaginary;
         }
 
-        //public ComplexNumber(double real) : this(real, 0) { }
         /// <summary>
-        /// Gets the imaginary component of the current ComplexNumber object.
+        /// Gets or sets the real component of the current complex number.
         /// </summary>
         public double Real { get; set; }
         /// <summary>
-        /// Gets the real component of the current Complex object.
+        /// Gets or sets the imaginary component of the current complex number.
         /// </summary>
         public double Imaginary { get; set; }
 
+        /// <summary>
+        /// Compares both components exactly using Double.Equals, including NaN and infinities.
+        /// </summary>
         public bool Equals(ComplexNumber other)
         {
-            if (other == null)
-                return false;
-
-            if (Math.Abs(Real - other.Real) < Double.Epsilon && Math.Abs(Imaginary - other.Imaginary) < Double.Epsilon)
-                return true;
-            return false;
+            return !ReferenceEquals(other, null)
+                && Real.Equals(other.Real)
+                && Imaginary.Equals(other.Imaginary);
         }
 
         /// <summary>
@@ -76,68 +75,44 @@ namespace ComplexNumbers
 
         public static ComplexNumber operator +(ComplexNumber x, ComplexNumber y)
         {
-            ComplexNumber z = new ComplexNumber(x.Real + y.Real, x.Imaginary + y.Imaginary);
-            return z;
+            return new ComplexNumber(x.Real + y.Real, x.Imaginary + y.Imaginary);
         }
 
         public static ComplexNumber operator +(double x, ComplexNumber y)
         {
-            ComplexNumber z = new ComplexNumber(x + y.Real, y.Imaginary);
-            return z;
+            return y + x;
         }
 
         public static ComplexNumber operator +(ComplexNumber x, double y)
         {
-            ComplexNumber z = new ComplexNumber(x.Real + y, x.Imaginary);
-            return z;
+            return new ComplexNumber(x.Real + y, x.Imaginary);
         }
 
         public static ComplexNumber operator -(ComplexNumber x, ComplexNumber y)
         {
-            ComplexNumber z = new ComplexNumber(x.Real - y.Real, x.Imaginary - y.Imaginary);
-            return z;
+            return new ComplexNumber(x.Real - y.Real, x.Imaginary - y.Imaginary);
         }
 
         public static ComplexNumber operator -(double x, ComplexNumber y)
         {
-            ComplexNumber z = new ComplexNumber(x - y.Real, -y.Imaginary);
-            return z;
+            return new ComplexNumber(x - y.Real, -y.Imaginary);
         }
 
         public static ComplexNumber operator -(ComplexNumber x, double y)
         {
-            ComplexNumber z = new ComplexNumber(x.Real - y, x.Imaginary);
-            return z;
+            return new ComplexNumber(x.Real - y, x.Imaginary);
         }
 
         public static bool operator ==(ComplexNumber x, ComplexNumber y)
         {
-            if (((object)x == null) && ((object)y == null))
-            {
-                return true;
-            }
-            if (((object)x == null) && !((object)y == null))
-            {
-                return false;
-            }
-            return x.Equals(y);
+            return ReferenceEquals(x, y)
+                || (!ReferenceEquals(x, null) && x.Equals(y));
         }
 
         public static bool operator !=(ComplexNumber x, ComplexNumber y)
         {
             return !(x == y);
         }
-
-        //public static explicit operator ComplexNumber(double num)
-        //{
-        //    return new ComplexNumber(num);
-        //}
-
-        //public static implicit operator double (ComplexNumber a)
-        //{
-        //    return a.Real;
-        //}
-
 
         public override string ToString()
         {
@@ -151,12 +126,15 @@ namespace ComplexNumbers
         /// <returns></returns>
         public override bool Equals(object obj)
         {
-            ComplexNumber number = obj as ComplexNumber;
-            if ((object)number == null) return false;
-            return (Math.Abs(Real - number.Real) < Double.Epsilon
-                && Math.Abs(Imaginary - number.Imaginary) < Double.Epsilon);
-
+            return Equals(obj as ComplexNumber);
         }
 
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (Real.GetHashCode() * 397) ^ Imaginary.GetHashCode();
+            }
+        }
     }
 }
