@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Capitals/">
+    <Project Path="Capitals.Core/Capitals.Core.csproj" />
+    <Project Path="Capitals.Core.Tests/Capitals.Core.Tests.csproj" />
+    <Project Path="WindowsFormsCapitals/WindowsFormsCapitals.csproj" />
+    <Project Path="WpfCapitals/WpfCapitals.csproj" />
+  </Folder>
+  <Folder Name="/TextEditor/">
+    <Project Path="TextEditor.Core/TextEditor.Core.csproj" />
+    <Project Path="TextEditor.Core.Tests/TextEditor.Core.Tests.csproj" />
+    <Project Path="WindowsFormsTextEditor/WindowsFormsTextEditor.csproj" />
+    <Project Path="WpfTextEditor/WpfTextEditor.csproj" />
+  </Folder>
+</Solution>

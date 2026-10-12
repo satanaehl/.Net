@@ -34,7 +34,8 @@
 ## ComplexNumbers
 
 - Приложение и тесты используют .NET 10 (`net10.0`) и SDK-style проекты.
-- Остальные учебные проекты обновлять отдельно; их целевые версии пока сохранять.
+- Консольные MoreLessProgram, FilenameExtension и TreeOfDir обновлять отдельно;
+  их целевые версии пока сохранять. Десктопные проекты описаны ниже.
 - Для тестов используется xUnit.net v3; запускать через `dotnet test`.
 - Равенство компонентов определяется через `double.Equals`, без допуска.
 - Приближённое сравнение выполнять отдельно через `ApproximatelyEquals`;
@@ -51,3 +52,23 @@ dotnet run --project ComplexNumbers/ComplexNumbers.csproj --no-build --configura
 - GitHub Actions: `.github/workflows/complex-numbers.yml` собирает и проверяет
   этот проект в Release на Windows. При изменении команд запуска обновлять workflow.
 - `global.json` выбирает SDK .NET 10 и Microsoft.Testing.Platform для `dotnet test`.
+
+## Десктопные приложения
+
+- `Desktop.slnx` объединяет викторину и редактор, их библиотеки и тесты.
+- `Capitals.Core` и `TextEditor.Core` используют `net10.0`; интерфейсы
+  WinForms и WPF — `net10.0-windows`. Библиотеки не должны ссылаться на UI-проекты.
+- Правила и состояние добавлять в соответствующую библиотеку, диалоги и контролы — в UI.
+- Данные викторины и тексты локализаций принадлежат `Capitals.Core`.
+  Исходные `.txt` имеют Windows-1251; не перекодировать их без отдельной проверки.
+- Тесты — xUnit.net v3, файловые сценарии только во временных каталогах.
+- Проверенные команды из корня репозитория:
+
+```powershell
+dotnet restore Desktop.slnx --packages .packages
+dotnet build Desktop.slnx --no-restore --configuration Release
+dotnet test --solution Desktop.slnx --no-build --configuration Release
+```
+
+- Команды запуска и изменения поведения: `DESKTOP.md`.
+- CI: `.github/workflows/desktop.yml`; при смене команд обновлять его вместе с документацией.

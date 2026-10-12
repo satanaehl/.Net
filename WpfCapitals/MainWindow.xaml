@@ -1,0 +1,32 @@
+<Window x:Class="WpfCapitals.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Capitals — WPF" Width="620" Height="360" MinWidth="460" MinHeight="300">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Button Content="Start / Новая игра" HorizontalAlignment="Left" Padding="16,8" Click="Start_Click" />
+        <TextBlock x:Name="AnswersText" Grid.Row="1" Margin="0,16,0,12" TextWrapping="Wrap" />
+        <TextBlock x:Name="QuestionText" Grid.Row="2" Text="7 capitals · 5 tries per question / 7 столиц · 5 попыток на вопрос"
+                   FontSize="20" TextWrapping="Wrap" VerticalAlignment="Center" />
+        <Grid Grid.Row="3" Margin="0,12,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="AnswerBox" MaxLength="100" Padding="8" VerticalContentAlignment="Center" IsEnabled="False"
+                     AutomationProperties.Name="Capital answer" />
+            <Button x:Name="AnswerButton" Grid.Column="1" Content="Answer / Ответить" Margin="12,0,0,0" Padding="16,8"
+                    IsDefault="True" IsEnabled="False" Click="Answer_Click" />
+        </Grid>
+        <StackPanel Grid.Row="4">
+            <TextBlock x:Name="TriesText" />
+            <TextBlock x:Name="StatusText" Margin="0,8,0,0" FontWeight="SemiBold" TextWrapping="Wrap" />
+        </StackPanel>
+    </Grid>
+</Window>

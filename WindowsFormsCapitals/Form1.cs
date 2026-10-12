@@ -1,4 +1,5 @@
 ﻿using System;
+using Capitals.Core;
 using System.Windows.Forms;
 using WindowsFormsCapitals.Properties;
 
@@ -6,7 +7,7 @@ namespace WindowsFormsCapitals
 {
     public partial class Form1 : Form
     {
-        private Capitals One = new Capitals();
+        private readonly CapitalsGame One = new CapitalsGame(CapitalCatalog.LoadDefault());
 
         public Form1()
         {
@@ -30,31 +31,31 @@ namespace WindowsFormsCapitals
 
         private void Answer()
         {
-            One.Try(textBox1.Text);
+            One.TryAnswer(textBox1.Text);
             UpdateQuestion();
         }
 
         private void UpdateQuestion()
         {
-            label1.Text = string.Format(Resources.Form1_Question, One.OneCountry[0]);
+            label1.Text = string.Format(Resources.Form1_Question, One.CurrentQuestion.Country);
             textBox1.Text = String.Empty;
-            lblAnswer.Text = string.Format(Resources.Form1_NumberRightAnswersToWin, One.NumberAnswers);
-            lblTry.Text = string.Format(Resources.Form1_NumberOfTries, One.NumberTries);
+            lblAnswer.Text = string.Format(Resources.Form1_NumberRightAnswersToWin, One.AnswersRemaining);
+            lblTry.Text = string.Format(Resources.Form1_NumberOfTries, One.TriesRemaining);
 
-            switch (One.StateOfPlayer)
+            switch (One.State)
             {
-                case State.Loser:
+                case GameState.Loser:
                     label2.Text = Resources.Form1_Loser;
                     btnGame.Enabled = false;
                     break;
-                case State.Winner:
+                case GameState.Winner:
                     label2.Text = Resources.Form1_Winner;
                     btnGame.Enabled = false;
                     lblAnswer.Text = String.Empty;
                     lblTry.Text = String.Empty;
                     label1.Text = String.Empty;
                     break;
-                case State.None:
+                case GameState.Playing:
                     label2.Text = String.Empty;
                     break;
             }

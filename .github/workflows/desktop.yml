@@ -1,0 +1,60 @@
+name: Desktop
+
+on:
+  push:
+    paths:
+      - 'Capitals.Core/**'
+      - 'Capitals.Core.Tests/**'
+      - 'WindowsFormsCapitals/**'
+      - 'WpfCapitals/**'
+      - 'TextEditor.Core/**'
+      - 'TextEditor.Core.Tests/**'
+      - 'WindowsFormsTextEditor/**'
+      - 'WpfTextEditor/**'
+      - 'Desktop.slnx'
+      - 'global.json'
+      - '**/Directory.Build.*'
+      - '**/Directory.Packages.props'
+      - '**/[Nn]u[Gg]et.[Cc]onfig'
+      - '.github/workflows/desktop.yml'
+  pull_request:
+    paths:
+      - 'Capitals.Core/**'
+      - 'Capitals.Core.Tests/**'
+      - 'WindowsFormsCapitals/**'
+      - 'WpfCapitals/**'
+      - 'TextEditor.Core/**'
+      - 'TextEditor.Core.Tests/**'
+      - 'WindowsFormsTextEditor/**'
+      - 'WpfTextEditor/**'
+      - 'Desktop.slnx'
+      - 'global.json'
+      - '**/Directory.Build.*'
+      - '**/Directory.Packages.props'
+      - '**/[Nn]u[Gg]et.[Cc]onfig'
+      - '.github/workflows/desktop.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-2022
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Set up SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore
+        run: dotnet restore Desktop.slnx --packages .packages
+      - name: Build
+        run: dotnet build Desktop.slnx --no-restore --configuration Release
+      - name: Test
+        run: dotnet test --solution Desktop.slnx --no-build --configuration Release

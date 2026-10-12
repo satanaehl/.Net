@@ -1,199 +1,121 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics.Eventing.Reader;
-using System.Drawing;
+using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using TextEditor.Core;
 using WindowsFormsTextEditor.Properties;
-
-
-//TODO add context menu
-//TODO add multithreading
 
 namespace WindowsFormsTextEditor
 {
     public sealed partial class Form1 : Form
     {
-        private static bool _isChanged = false;
+        private readonly TextDocument document = new TextDocument();
 
         public Form1()
         {
             InitializeComponent();
-            openFileDialog1.InitialDirectory = saveFileDialog1.InitialDirectory = Directory.GetCurrentDirectory();
-            saveFileDialog1.FileName = "new file";
-            Text = Resources.Form1_SimpleTextEditor;
-            txtBox.Width = ClientSize.Width;
-            txtBox.Height = ClientSize.Height;
+            txtBox.Dock = DockStyle.Fill;
+            txtBox.BringToFront();
+            saveFileDialog1.FileName = "new file.txt";
+            var saveAs = new ToolStripMenuItem("Save As...") { ShortcutKeys = Keys.Control | Keys.Shift | Keys.S };
+            saveAs.Click += (sender, e) => SaveDocument(true);
+            fileToolStripMenuItem.DropDownItems.Insert(3, saveAs);
+            UpdateTitle();
         }
 
-        public void SaveToFile()
+        private void UpdateTitle()
         {
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                string path = saveFileDialog1.FileName;
-                using (StreamWriter writer = new StreamWriter(path, false))
-                {
-                    writer.WriteLine(txtBox.Text);
-                }
-                saveFileDialog1.FileName = "new file";
-                Text = Resources.Form1_SimpleTextEditor + Path.GetFileName(path);
-            }
-            _isChanged = false;
+            Text = Resources.Form1_SimpleTextEditor + " — " +
+                (document.FilePath == null ? "new file" : Path.GetFileName(document.FilePath)) +
+                (document.HasChanges ? " *" : "");
         }
+
+        public void SaveToFile() => SaveDocument(false);
+
+        private bool SaveDocument(bool saveAs)
+        {
+            string path = document.FilePath;
+            if (saveAs || path == null)
+            {
+                if (saveFileDialog1.ShowDialog(this) != DialogResult.OK)
+                    return false;
+                path = saveFileDialog1.FileName;
+            }
+            try
+            {
+                document.Save(path);
+                saveFileDialog1.FileName = path;
+                UpdateTitle();
+                return true;
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                MessageBox.Show(this, ex.Message, "Save", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
+        private bool CanContinue() => document.CanContinue(() =>
+        {
+            var choice = MessageBox.Show(this,
+                Resources.Form1_NewToolStripMenuItem_Click_SaveDocYesNoCancel,
+                Resources.Form1_NewToolStripMenuItem_Click_SaveDoc,
+                MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            return choice == DialogResult.Yes ? UnsavedChangesChoice.Save :
+                choice == DialogResult.No ? UnsavedChangesChoice.Discard : UnsavedChangesChoice.Cancel;
+        }, () => SaveDocument(false));
 
         public void NewFile()
         {
+            document.New();
             txtBox.Clear();
-            _isChanged = false;
-            Text = Resources.Form1_SimpleTextEditor;
+            saveFileDialog1.FileName = "new file.txt";
+            UpdateTitle();
         }
 
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SaveToFile();
-        }
-
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e) => SaveToFile();
         private void txtBox_TextChanged(object sender, EventArgs e)
         {
-            _isChanged = true;
+            document.Text = txtBox.Text;
+            UpdateTitle();
         }
-
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (_isChanged)
-            {
-                const string message = "Do you want to save it?";
-                const string caption = "Save?";
-                var result = MessageBox.Show(message, caption,
-                                             MessageBoxButtons.YesNoCancel,
-                                             MessageBoxIcon.Question);
-                switch (result)
-                {
-                    case DialogResult.Yes:
-                        SaveToFile();
-                        break;
-                    case DialogResult.No:
-                        NewFile();
-                        break;
-                    case DialogResult.Cancel: break;
-                }
-            }
-            else
-            {
-                NewFile();
-            }
+            if (CanContinue()) NewFile();
         }
-
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Close();
-        }
-
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e) => Close();
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            if (openFileDialog1.ShowDialog(this) != DialogResult.OK || !CanContinue())
+                return;
+            try
             {
-                string path = openFileDialog1.FileName;
-                using (StreamReader reader = new StreamReader(path, false))
-                {
-                    txtBox.Text = reader.ReadToEnd();
-                }
-                Text = Resources.Form1_SimpleTextEditor + Path.GetFileName(path);
-                saveFileDialog1.FileName = Path.GetFileName(path);
+                document.Load(openFileDialog1.FileName);
+                txtBox.Text = document.Text;
+                txtBox.ClearUndo();
+                saveFileDialog1.FileName = document.FilePath;
+                UpdateTitle();
             }
-
-            _isChanged = false;
-        }
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (_isChanged)
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
             {
-                const string message =
-                    "This document is not saved! Do you want to save it before exit?";
-                const string caption = "Exit";
-                var result = MessageBox.Show(message, caption,
-                    MessageBoxButtons.YesNoCancel,
-                    MessageBoxIcon.Question);
-
-                switch (result)
-                {
-                    case DialogResult.Yes:
-                        e.Cancel = true;
-                        SaveToFile();
-                        break;
-                    case DialogResult.No:
-
-                        break;
-                    case DialogResult.Cancel:
-                        e.Cancel = true;
-                        break;
-                }
+                MessageBox.Show(this, ex.Message, "Open", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        private void undoToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            txtBox.Undo();
-        }
-
-        private void cutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            txtBox.Cut();
-        }
-
-        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            txtBox.Copy();
-        }
-
-        private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            txtBox.Paste();
-        }
-
-        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            txtBox.Clear();
-        }
-
-        private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            txtBox.SelectAll();
-        }
-
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e) => e.Cancel = !CanContinue();
+        private void undoToolStripMenuItem_Click(object sender, EventArgs e) => txtBox.Undo();
+        private void cutToolStripMenuItem_Click(object sender, EventArgs e) => txtBox.Cut();
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e) => txtBox.Copy();
+        private void pasteToolStripMenuItem_Click(object sender, EventArgs e) => txtBox.Paste();
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e) => txtBox.SelectedText = "";
+        private void selectAllToolStripMenuItem_Click(object sender, EventArgs e) => txtBox.SelectAll();
         private void editToolStripMenuItem_Click(object sender, EventArgs e)
         {
             undoToolStripMenuItem.Enabled = txtBox.CanUndo;
-            cutToolStripMenuItem.Enabled =
-                pasteToolStripMenuItem.Enabled =
+            cutToolStripMenuItem.Enabled = copyToolStripMenuItem.Enabled =
                 deleteToolStripMenuItem.Enabled = txtBox.SelectionLength > 0;
-            pasteToolStripMenuItem.Enabled = Clipboard.GetDataObject().
-                GetDataPresent(typeof(string)); //acceptable for null clipboard
-            selectAllToolStripMenuItem.Enabled = txtBox.Text != String.Empty;
+            pasteToolStripMenuItem.Enabled = Clipboard.ContainsText();
+            selectAllToolStripMenuItem.Enabled = txtBox.TextLength > 0;
         }
-
-        private void Form1_Resize(object sender, EventArgs e)
-        {
-            txtBox.Width = ClientSize.Width;
-            txtBox.Height = ClientSize.Height;
-        }
-
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            AboutBox1 aboutBox = new AboutBox1();
-            aboutBox.Show();
-        }
+        private void Form1_Resize(object sender, EventArgs e) { }
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e) => new AboutBox1().Show(this);
     }
 }
-
-
-
-
-
-
